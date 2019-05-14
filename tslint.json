@@ -1,0 +1,32 @@
+{
+  "extends": "tslint:recommended",
+  "rulesDirectory": [],
+  "rules": {
+    "max-line-length": {
+      "options": [
+        120
+      ]
+    },
+    "quotemark": [
+      true,
+      "single",
+      "jsx-double"
+    ],
+    "indent": [
+      true,
+      "spaces",
+      2
+    ],
+    "interface-name": [
+      true,
+      "never-prefix"
+    ]
+  },
+  "jsRules": {
+    "max-line-length": {
+      "options": [
+        120
+      ]
+    }
+  }
+}
