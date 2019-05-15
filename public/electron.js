@@ -39,8 +39,7 @@ app.on('window-all-closed', () => {
 });
 
 ipcMain.on('quit', () => {
-  mainWindow.close();
-  tray.close();
+  app.quit();
   quitApp();
 });
 
@@ -134,7 +133,9 @@ const openWindow = () => {
   usb.on('attach', handleUSBEvent);
   usb.on('detach', handleUSBEvent);
 
-  mainWindow.openDevTools({ mode: 'detach' });
+  if (isDev) {
+    mainWindow.openDevTools({ mode: 'detach' });
+  }
 };
 
 const closeWindow = () => {
