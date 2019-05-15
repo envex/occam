@@ -25,7 +25,9 @@ class FruityRazer {
     try {
       const response = await axios.get(FruityRazer.BaseURL + '/devices');
 
-      if (response.data.devices) { return response.data.devices; }
+      if (response.data.devices) {
+        return response.data.devices;
+      }
     } catch (e) {
       // Do nothing for now
     }
@@ -40,7 +42,9 @@ class FruityRazer {
         args,
       );
 
-      if (response.data.success) { return true; }
+      if (response.data.success) {
+        return true;
+      }
     } catch (e) {
       // Do nothing for now
     }
