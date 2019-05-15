@@ -1,14 +1,14 @@
-const { app, BrowserWindow, Tray, TouchBar } = require("electron");
-const { ipcMain } = require("electron");
-const { join: joinPath } = require("path");
-const { spawn } = require("child_process");
-const isDev = require("electron-is-dev");
-const path = require("path");
-const usb = require("usb");
+const { app, BrowserWindow, Tray, TouchBar } = require('electron');
+const { ipcMain } = require('electron');
+const { join: joinPath } = require('path');
+const { spawn } = require('child_process');
+const isDev = require('electron-is-dev');
+const path = require('path');
+const usb = require('usb');
 
 const { TouchBarColorPicker, TouchBarButton, TouchBarSpacer } = TouchBar;
 
-const assetsDirectory = path.join(__dirname, "../assets");
+const assetsDirectory = path.join(__dirname, '../assets');
 const WINDOW_WIDTH = 300;
 
 let mainWindow;
@@ -17,35 +17,39 @@ let tray;
 // Don't show the app in the doc
 app.dock.hide();
 
-app.on("activate", () => {
+app.on('activate', () => {
   if (mainWindow === null) {
     createWindow();
   }
 });
 
-app.on("ready", () => {
+app.on('ready', () => {
   createTray();
   createWindow();
 
-  showWindow();
+  openWindow();
 });
 
-app.on("quit", quitApp);
+app.on('quit', quitApp);
 
-app.on("window-all-closed", () => {
-  if (process.platform !== "darwin") {
+app.on('window-all-closed', () => {
+  if (process.platform !== 'darwin') {
     app.quit();
   }
 });
 
-ipcMain.on("quit", () => {
+ipcMain.on('quit', () => {
   mainWindow.close();
   tray.close();
   quitApp();
 });
 
+ipcMain.on('close-window', () => {
+  closeWindow();
+});
+
 // Resize the window when content changes
-ipcMain.on("resize-window", (event, height) => {
+ipcMain.on('resize-window', (event, height) => {
   mainWindow.setSize(WINDOW_WIDTH, height);
 });
 
@@ -61,7 +65,7 @@ function createWindow() {
       // Prevents renderer process code from not running when window is hidden
       backgroundThrottling: false,
       nodeIntegration: true,
-      preload: __dirname + "/preload.js"
+      preload: __dirname + '/preload.js'
     }
   });
 
@@ -71,47 +75,38 @@ function createWindow() {
 
   mainWindow.loadURL(
     isDev
-      ? "http://localhost:3000"
-      : `file://${path.join(__dirname, "../build/index.html")}`
+      ? 'http://localhost:3000'
+      : `file://${path.join(__dirname, '../build/index.html')}`
   );
-  mainWindow.on("closed", () => (mainWindow = null));
+  mainWindow.on('closed', () => (mainWindow = null));
+
+  mainWindow.on('blur', closeWindow);
 }
 
 const createTouchBar = () => {
   const colorpicker = new TouchBarColorPicker({
     change: color => {
-      mainWindow.webContents.send("set-color-from-touchbar", color);
+      mainWindow.webContents.send('set-color-from-touchbar', color);
     }
   });
 
   const sendButton = new TouchBarButton({
-    label: "Send to Devices",
+    label: 'Send to Devices',
     click: () => {
-      mainWindow.webContents.send("send-from-touchbar");
+      mainWindow.webContents.send('send-from-touchbar');
     }
   });
 
   return new TouchBar({
-    items: [colorpicker, new TouchBarSpacer({ size: "large" }), sendButton]
+    items: [colorpicker, new TouchBarSpacer({ size: 'large' }), sendButton]
   });
 };
 
 const createTray = () => {
-  tray = new Tray(path.join(assetsDirectory, "logoTemplate.png"));
-  tray.on("right-click", toggleWindow);
-  tray.on("double-click", toggleWindow);
-  tray.on("click", function(event) {
-    toggleWindow();
+  tray = new Tray(path.join(assetsDirectory, 'logoTemplate.png'));
 
-    // // Show devtools when command clicked
-    // if (
-    //   mainWindow.isVisible() &&
-    //   // process.defaultApp &&
-    //   event.altKey
-    // ) {
-    //   mainWindow.openDevTools({ mode: 'detach' })
-    // }
-  });
+  tray.on('right-click', openWindow);
+  tray.on('click', openWindow);
 };
 
 const getWindowPosition = () => {
@@ -129,61 +124,57 @@ const getWindowPosition = () => {
   return { x: x, y: y };
 };
 
-function quitApp() {
-  fruityRazerProcess.kill();
-}
-
-const showWindow = () => {
+const openWindow = () => {
   const position = getWindowPosition();
 
   mainWindow.setPosition(position.x, position.y, false);
   mainWindow.show();
   mainWindow.focus();
 
-  usb.on("attach", handleUSBEvent);
-  usb.on("detach", handleUSBEvent);
+  usb.on('attach', handleUSBEvent);
+  usb.on('detach', handleUSBEvent);
 
-  mainWindow.openDevTools({ mode: "detach" });
+  mainWindow.openDevTools({ mode: 'detach' });
 };
 
-const toggleWindow = () => {
-  if (mainWindow.isVisible()) {
-    mainWindow.hide();
-  } else {
-    showWindow();
-  }
+const closeWindow = () => {
+  mainWindow.hide();
 };
+
+function quitApp() {
+  fruityRazerProcess.kill();
+}
 
 const handleUSBEvent = () => {
-  mainWindow.webContents.send("usb-event");
+  mainWindow.webContents.send('usb-event');
 };
 
 // Startup FruityRazer in the background so we can
 // make API calls
 let fruityRazerProcess;
-const appRootDir = require("app-root-dir");
+const appRootDir = require('app-root-dir');
 
 const execPath = !isDev
-  ? joinPath(path.dirname(appRootDir.get()), "bin")
-  : joinPath(appRootDir.get(), "resources", "mac");
+  ? joinPath(path.dirname(appRootDir.get()), 'bin')
+  : joinPath(appRootDir.get(), 'resources', 'mac');
 
 function startupFruityRazer() {
   // TODO: Move this?
   // TODO: How can we recover from a crash?
   fruityRazerProcess = spawn(
-    `${joinPath(execPath, "FruityRazer.app/Contents/MacOS/FruityRazer")}`
+    `${joinPath(execPath, 'FruityRazer.app/Contents/MacOS/FruityRazer')}`
   );
 
-  fruityRazerProcess.stdout.on("data", data => {
+  fruityRazerProcess.stdout.on('data', data => {
     console.log(`stdout: ${data}`);
   });
 
-  fruityRazerProcess.stderr.on("data", data => {
+  fruityRazerProcess.stderr.on('data', data => {
     console.log(`stderr: ${data}`);
     startupFruityRazer();
   });
 
-  fruityRazerProcess.on("close", code => {
+  fruityRazerProcess.on('close', code => {
     console.log(`child process exited with code ${code}`);
   });
 }

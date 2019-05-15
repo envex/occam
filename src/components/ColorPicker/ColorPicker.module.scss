@@ -1,6 +1,7 @@
 .container {
   padding: 10px;
-  background: var(--background);
+  position: relative;
+  z-index: 1;
 }
 
 .saturation {

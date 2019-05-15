@@ -24,12 +24,11 @@ img {
 
 :root {
   --background: #161E33;
-  --footer: #10192E;
-  --faded: #444B5B;
-  --text: #fff;
-  --highlight: #00CA45;
-  --highlight-hover: rgb(0, 255, 85);
   --error: #D11010;
+  --faded: #444B5B;
+  --highlight-hover: rgb(0, 255, 85);
+  --highlight: #00CA45;
+  --text: #fff;
 }
 
 body {
@@ -37,7 +36,6 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   user-select: none;
-  overflow: hidden;
 }
 
 h2 {

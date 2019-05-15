@@ -36,3 +36,20 @@ export const Chevron: React.SFC = () => {
     </svg>
   );
 };
+
+export const Close: React.SFC = () => {
+  return (
+    <svg
+      fill="none"
+      height="24"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      strokeWidth="2"
+      stroke="currentColor"
+      width="24"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path d="M9 9l6 6M15 9l-6 6"/>
+    </svg>
+  );
+};

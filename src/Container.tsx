@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { Button } from 'components/Button/Button';
-import { Settings } from 'components/Icons';
+import { Close, Settings } from 'components/Icons';
 
 import ColorPicker from 'components/ColorPicker/ColorPicker';
 import Devices from 'components/Devices/Devices';
@@ -11,14 +11,18 @@ import { FRDevice } from 'app';
 import FruityRazer from 'FruityRazer';
 import { getPostDataForDevice } from 'utils/deviceUtils';
 
-import { SEND_FROM_TOUCHBAR_EVENT, SET_COLOR_FROM_TOUCHBAR_EVENT } from './constants';
+import {
+  CLOSE_WINDOW_EVENT,
+  SEND_FROM_TOUCHBAR_EVENT,
+  SET_COLOR_FROM_TOUCHBAR_EVENT,
+} from './constants';
 
-import styles from './Container.module.css';
+import styles from './Container.module.scss';
 
 const { remote, ipcRenderer } = window.require('electron');
 const storage = window.require('electron-json-storage');
 
-interface AppState {
+interface ContainerState {
   deviceColors: Record<string, string>;
   devices: FRDevice[];
   hex: string;
@@ -33,7 +37,7 @@ declare global {
 
 const { Menu, MenuItem } = remote;
 
-export default class App extends React.PureComponent<{}, AppState> {
+export default class App extends React.PureComponent<{}, ContainerState> {
   public containerRef = React.createRef<HTMLDivElement>();
 
   public state = {
@@ -51,7 +55,7 @@ export default class App extends React.PureComponent<{}, AppState> {
     window.addEventListener('keydown', this.handleKeyDown);
   }
 
-  public componentDidUpdate({}, prevState: AppState) {
+  public componentDidUpdate(prevProps: any, prevState: ContainerState) {
     const { devices } = this.state;
 
     if (
@@ -97,6 +101,10 @@ export default class App extends React.PureComponent<{}, AppState> {
     this.setState({
       devices: devices.filter((device) => device.connected),
     });
+  }
+
+  public handleCloseClick = (): void => {
+    ipcRenderer.send(CLOSE_WINDOW_EVENT);
   }
 
   public handleColorChange = (color: any): void => {
@@ -183,6 +191,10 @@ export default class App extends React.PureComponent<{}, AppState> {
       >
         <div className={styles.content}>
 
+          <div className={styles.close} onClick={this.handleCloseClick}>
+            <Close />
+          </div>
+
           <h2>Devices</h2>
 
           <Devices
@@ -205,9 +217,9 @@ export default class App extends React.PureComponent<{}, AppState> {
 
           <Button onClick={this.handleSave} text="Update All" />
 
-          <a className={styles.settings} onClick={this.handleContextMenu}>
+          <div className={styles.settings} onClick={this.handleContextMenu}>
             <Settings />
-          </a>
+          </div>
         </div>
       </div>
     );
