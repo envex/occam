@@ -64,7 +64,6 @@ function createWindow() {
       // Prevents renderer process code from not running when window is hidden
       backgroundThrottling: false,
       nodeIntegration: true,
-      preload: __dirname + '/preload.js'
     }
   });
 
