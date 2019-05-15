@@ -1,7 +1,7 @@
 import cx from 'classnames';
 import React from 'react';
 
-import styles from './ColorPicker.module.css';
+import styles from './ColorPicker.module.scss';
 
 interface ColorPickerPointerProps {
   hsl: any;

@@ -1,0 +1,20 @@
+.input {
+  border: 2px solid var(--faded);
+  height: 30px;
+  border-radius: 2px;
+  margin: 0 10px 0 0;
+  color: var(--text);
+  text-transform: uppercase;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 0 0 0 10px;
+  width: 100px;
+
+  &__is_valid:focus {
+    border-color: var(--highlight);
+  }
+
+  &__is_invalid:focus {
+    border-color: var(--error);
+  }
+}

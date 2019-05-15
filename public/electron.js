@@ -46,13 +46,13 @@ ipcMain.on("quit", () => {
 
 // Resize the window when content changes
 ipcMain.on("resize-window", (event, height) => {
-  mainWindow.setSize(WINDOW_WIDTH, height + 10);
+  mainWindow.setSize(WINDOW_WIDTH, height);
 });
 
 function createWindow() {
   mainWindow = new BrowserWindow({
     width: WINDOW_WIDTH,
-    height: 450,
+    height: 300,
     show: false,
     frame: false,
     hasShadow: false,

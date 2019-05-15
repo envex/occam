@@ -1,23 +1,20 @@
 .container {
-
+  padding: 10px;
+  background: var(--background);
 }
 
 .saturation {
   display: block;
   height: 100px;
   position: relative;
-  width: calc(100% + 30px);
-  margin: 0 0 0 -15px;
   cursor: crosshair;
+  z-index: 1;
 }
 
 .hue {
-  /* margin: 14px 0 0 0; */
   height: 10px;
   display: block;
   position: relative;
-  width: calc(100% + 30px);
-  margin: 0 0 0 -15px;
 }
 
 .pointer {
@@ -31,12 +28,12 @@
   transform: translate(-5px, -5px);
   box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.3);
   cursor: crosshair;
-}
 
-.pointer__is_slider {
-  transform: translate(-3px, 0px);
-  cursor: ew-resize;
-  width: 6px;
-  border-radius: 1px;
-  height: 10px;
+  &__is_slider {
+    transform: translate(-3px, 0px);
+    cursor: ew-resize;
+    width: 6px;
+    border-radius: 1px;
+    height: 10px;
+  }
 }

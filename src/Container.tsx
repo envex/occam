@@ -1,8 +1,11 @@
 import React from 'react';
 
 import { Button } from 'components/Button/Button';
+import { Settings } from 'components/Icons';
+
 import ColorPicker from 'components/ColorPicker/ColorPicker';
 import Devices from 'components/Devices/Devices';
+import Input from 'components/Input/Input';
 
 import { FRDevice } from 'app';
 import FruityRazer from 'FruityRazer';
@@ -10,7 +13,6 @@ import { getPostDataForDevice } from 'utils/deviceUtils';
 
 import { SEND_FROM_TOUCHBAR_EVENT, SET_COLOR_FROM_TOUCHBAR_EVENT } from './constants';
 
-import settings from 'settings.svg';
 import styles from './Container.module.css';
 
 const { remote, ipcRenderer } = window.require('electron');
@@ -20,7 +22,6 @@ interface AppState {
   deviceColors: Record<string, string>;
   devices: FRDevice[];
   hex: string;
-  selectedDevices: string[];
 }
 
 // TODO: Move this somewhere
@@ -39,7 +40,6 @@ export default class App extends React.PureComponent<{}, AppState> {
     deviceColors: {},
     devices: [],
     hex: 'FF1111',
-    selectedDevices: [],
   };
 
   public componentDidMount() {
@@ -47,6 +47,8 @@ export default class App extends React.PureComponent<{}, AppState> {
 
     ipcRenderer.on(SET_COLOR_FROM_TOUCHBAR_EVENT, this.handleSetColorFromTouchBar);
     ipcRenderer.on(SEND_FROM_TOUCHBAR_EVENT, this.handleSendFromTouchBar);
+
+    window.addEventListener('keydown', this.handleKeyDown);
   }
 
   public componentDidUpdate({}, prevState: AppState) {
@@ -63,10 +65,8 @@ export default class App extends React.PureComponent<{}, AppState> {
     }
   }
 
-  public getAreAllDevicesSelected(): boolean {
-    const { devices, selectedDevices } = this.state;
-
-    return devices.length === selectedDevices.length;
+  public componentWillUnmount() {
+    window.removeEventListener('keydown', this.handleKeyDown);
   }
 
   public setColorFromStorage(): void {
@@ -75,16 +75,19 @@ export default class App extends React.PureComponent<{}, AppState> {
         return;
       }
 
-      data.devices.forEach(({ device, hex }: { device: string; hex: string }) => {
-          const postData = getPostDataForDevice(device, hex);
+      for (const device in data.devices) {
+        if (!device) {
+          continue;
+        }
 
-          FruityRazer.sendLightingMessage(device, postData);
-        },
-      );
+        const { shortName, hex } = data.devices[device];
 
-      if (data.selectedDevices) {
+        this.sendLightingMessage(shortName, hex);
+      }
+
+      if (data.hex) {
         this.setState({
-          selectedDevices: data.selectedDevices,
+          hex: data.hex,
         });
       }
     });
@@ -120,58 +123,40 @@ export default class App extends React.PureComponent<{}, AppState> {
   }
 
   public handleDeviceClick = (shortName: string): void => {
-    const { selectedDevices } = this.state;
+    this.sendLightingMessage(shortName);
+  }
 
-    const newSelectedDevices: string[] = [...selectedDevices];
+  public handleInputChange = (hex: string): void => {
+    this.setState({
+      hex,
+    });
+  }
 
-    const index = newSelectedDevices.indexOf(shortName);
-
-    if (index === -1) {
-      newSelectedDevices.push(shortName);
-    } else {
-      newSelectedDevices.splice(index, 1);
-    }
-
-    // TODO: Is this overkill?
-    if (newSelectedDevices !== selectedDevices) {
-      storage.set('selectedDevices', newSelectedDevices);
-
-      this.setState({
-        selectedDevices: newSelectedDevices,
-      });
+  public handleKeyDown = (event: KeyboardEvent): void => {
+    if (
+      event.repeat === false &&
+      event.key === 'Enter' &&
+      event.metaKey === true
+    ) {
+      this.handleSave();
     }
   }
 
   public handleSave = (): void => {
-    const { selectedDevices, hex } = this.state;
+    const { devices, hex } = this.state;
 
-    const data = selectedDevices.map((device) => {
-      return { device, hex };
+    const data: Record<string, { shortName: string, hex: string }> = {};
+
+    devices.forEach(({ shortName }: FRDevice) => {
+      data[shortName] = { shortName, hex };
     });
 
     storage.set('devices', data);
+    storage.set('hex', hex);
 
-    selectedDevices.forEach((device) => {
-      const postData = getPostDataForDevice(device, hex);
-
-      // TODO: Should this be async?
-      FruityRazer.sendLightingMessage(device, postData);
+    devices.forEach(({ shortName }) => {
+      this.sendLightingMessage(shortName);
     });
-  }
-
-  public handleSelectAllClick = (): void => {
-    const { devices, selectedDevices } = this.state;
-
-    if (selectedDevices.length) {
-      this.setState({
-        selectedDevices: [],
-      });
-    } else {
-      this.setState({
-        // TODO: Fix this
-        selectedDevices: devices.map((device: FRDevice) => device.shortName),
-      });
-    }
   }
 
   public handleSendFromTouchBar = (): void => {
@@ -182,52 +167,46 @@ export default class App extends React.PureComponent<{}, AppState> {
     this.handleColorChange({ hex });
   }
 
-  public renderSelectAllText(): string {
-    const areAllDevicesSelected = this.getAreAllDevicesSelected();
+  public sendLightingMessage(shortName: string, hex: string = this.state.hex): void {
+    const postData = getPostDataForDevice(shortName, hex);
 
-    return areAllDevicesSelected ? 'Unselect' : 'Select';
+    FruityRazer.sendLightingMessage(shortName, postData);
   }
 
   public render() {
-    const { devices, hex, selectedDevices } = this.state;
-
-    const selectAllText = this.renderSelectAllText();
-
-    const style = {
-      // backgroundColor: `#${hex}`,
-    };
-
-    console.log(style);
+    const { devices, hex } = this.state;
 
     return (
       <div
         className={styles.container}
         ref={this.containerRef}
-        style={style}
       >
         <div className={styles.content}>
-          <h2>Connected Devices</h2>
 
-          <p>
-            Choose the selected devices you'd like to update, or{' '}
-            <a onClick={this.handleSelectAllClick}>{selectAllText} them all</a>.
-          </p>
+          <h2>Devices</h2>
 
           <Devices
             devices={devices}
             onDeviceClick={this.handleDeviceClick}
             onSetDevices={this.setDevices}
-            selectedDevices={selectedDevices}
           />
 
-          <ColorPicker onChange={this.handleColorChange} color={`#${hex}`} />
         </div>
 
+        <ColorPicker onChange={this.handleColorChange} color={`#${hex}`} />
+
         <div className={styles.footer}>
-          <Button onClick={this.handleSave} text="Send to Devices" />
+
+          <Input
+            hex={hex}
+            key={hex}
+            onChange={this.handleInputChange}
+          />
+
+          <Button onClick={this.handleSave} text="Update All" />
 
           <a className={styles.settings} onClick={this.handleContextMenu}>
-            <img src={settings} />
+            <Settings />
           </a>
         </div>
       </div>

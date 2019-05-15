@@ -1,13 +1,14 @@
-import cx from 'classnames';
 import * as React from 'react';
 
 import { FRDevice } from 'app';
+import SendButton from './SendButton';
 
-import styles from './Device.module.css';
+import { DEVICE_TYPES } from '../../constants';
+
+import styles from './Device.module.scss';
 
 interface DeviceProps {
   device: FRDevice;
-  isSelected: boolean;
   onClick: (name: string) => void;
 }
 
@@ -22,21 +23,18 @@ export default class Device extends React.Component<DeviceProps> {
   }
 
   public render() {
-    const {
-      device: { fullName },
-      isSelected,
-    } = this.props;
+    const { device } = this.props;
 
-    const classes = cx(styles.dot, {
-      [styles.dot__is_selected]: isSelected,
-    });
+    const fullName = device.fullName.replace('Razer', '');
+    const type: string = DEVICE_TYPES[device.shortName];
 
     return (
-      <a onClick={this.handleClick} className={styles.container}>
-        {fullName}
+      <span className={styles.container}>
+        <span className={styles.name}>{fullName}</span>
+        <span className={styles.type}>{type}</span>
 
-        <span className={classes} />
-      </a>
+        <SendButton onClick={this.handleClick} />
+      </span>
     );
   }
 }

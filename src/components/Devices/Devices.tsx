@@ -15,7 +15,6 @@ interface DevicesProps {
   devices: FRDevice[];
   onDeviceClick: (fullName: string) => void;
   onSetDevices: (devices: FRDevice[]) => void;
-  selectedDevices: string[];
 }
 
 export default class Devices extends React.Component<DevicesProps> {
@@ -36,7 +35,7 @@ export default class Devices extends React.Component<DevicesProps> {
   }
 
   public renderDevices(): React.ReactNode {
-    const { devices, onDeviceClick, selectedDevices } = this.props;
+    const { devices, onDeviceClick } = this.props;
 
     return devices.map((device) => {
       const { connected } = device;
@@ -45,12 +44,9 @@ export default class Devices extends React.Component<DevicesProps> {
         return null;
       }
 
-      const isSelected = selectedDevices.includes(device.shortName);
-
       return (
         <Device
           device={device}
-          isSelected={isSelected}
           key={device.shortName}
           onClick={onDeviceClick}
         />

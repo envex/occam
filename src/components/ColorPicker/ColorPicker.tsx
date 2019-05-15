@@ -7,7 +7,7 @@ import {
   ColorPickerSlider,
 } from 'components/ColorPicker/ColorPickerPointer';
 
-import styles from './ColorPicker.module.css';
+import styles from './ColorPicker.module.scss';
 
 class ColorPicker extends React.PureComponent {
   public render() {
