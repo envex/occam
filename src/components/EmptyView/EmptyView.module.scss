@@ -1,0 +1,43 @@
+.container {
+  // background: var(--background);
+  height: 300px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  padding: 0 30px;
+}
+
+.logo {
+  height: 40px;
+  width: 40px;
+  background: url(../../logo.png);
+  margin: 0 0 30px;
+}
+
+.text {
+  font-size: 13px;
+  color: var(--text);
+  margin: 0 0 5px;
+  font-weight: 500;
+  line-height: 20px;
+  text-align: center;
+}
+
+.settings {
+  position: absolute;
+  bottom: 15px;
+  right: 15px;
+  opacity: 0.75;
+  z-index: 1;
+
+  &:hover{
+    opacity: 1;
+  }
+
+  svg {
+    stroke: var(--text);
+    transform: scale(0.8);
+  }
+}
+

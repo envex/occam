@@ -5,6 +5,7 @@ import { Close, Settings } from 'components/Icons';
 
 import ColorPicker from 'components/ColorPicker/ColorPicker';
 import Devices from 'components/Devices/Devices';
+import EmptyView from 'components/EmptyView/EmptyView';
 import Input from 'components/Input/Input';
 
 import { FRDevice } from 'app';
@@ -15,6 +16,7 @@ import {
   CLOSE_WINDOW_EVENT,
   SEND_FROM_TOUCHBAR_EVENT,
   SET_COLOR_FROM_TOUCHBAR_EVENT,
+  USB_EVENT,
 } from './constants';
 
 import styles from './Container.module.scss';
@@ -48,9 +50,11 @@ export default class App extends React.PureComponent<{}, ContainerState> {
 
   public componentDidMount() {
     this.setColorFromStorage();
+    this.getConnectedDevices();
 
     ipcRenderer.on(SET_COLOR_FROM_TOUCHBAR_EVENT, this.handleSetColorFromTouchBar);
     ipcRenderer.on(SEND_FROM_TOUCHBAR_EVENT, this.handleSendFromTouchBar);
+    ipcRenderer.on(USB_EVENT, this.getConnectedDevices);
 
     window.addEventListener('keydown', this.handleKeyDown);
   }
@@ -71,6 +75,17 @@ export default class App extends React.PureComponent<{}, ContainerState> {
 
   public componentWillUnmount() {
     window.removeEventListener('keydown', this.handleKeyDown);
+  }
+
+  public getConnectedDevices = async () => {
+
+    const devices = await FruityRazer.getDeviceList();
+
+    if (devices) {
+      this.setState({
+        devices: devices.filter((device: FRDevice) => device.connected),
+      });
+    }
   }
 
   public setColorFromStorage(): void {
@@ -94,12 +109,6 @@ export default class App extends React.PureComponent<{}, ContainerState> {
           hex: data.hex,
         });
       }
-    });
-  }
-
-  public setDevices = (devices: FRDevice[] = []): void => {
-    this.setState({
-      devices: devices.filter((device) => device.connected),
     });
   }
 
@@ -181,14 +190,15 @@ export default class App extends React.PureComponent<{}, ContainerState> {
     FruityRazer.sendLightingMessage(shortName, postData);
   }
 
-  public render() {
+  public renderDevicesView(): React.ReactNode {
     const { devices, hex } = this.state;
 
+    if (!devices.length) {
+      return null;
+    }
+
     return (
-      <div
-        className={styles.container}
-        ref={this.containerRef}
-      >
+      <>
         <div className={styles.content}>
 
           <div className={styles.close} onClick={this.handleCloseClick}>
@@ -200,7 +210,6 @@ export default class App extends React.PureComponent<{}, ContainerState> {
           <Devices
             devices={devices}
             onDeviceClick={this.handleDeviceClick}
-            onSetDevices={this.setDevices}
           />
 
         </div>
@@ -221,6 +230,33 @@ export default class App extends React.PureComponent<{}, ContainerState> {
             <Settings />
           </div>
         </div>
+      </>
+    );
+  }
+
+  public renderEmptyView(): React.ReactNode {
+    const { devices } = this.state;
+
+    if (devices.length) {
+      return null;
+    }
+
+    return (
+      <EmptyView onClick={this.handleContextMenu} />
+    );
+  }
+
+  public render() {
+    const devicesView = this.renderDevicesView();
+    const emptyView = this.renderEmptyView();
+
+    return (
+      <div
+        className={styles.container}
+        ref={this.containerRef}
+      >
+        {devicesView}
+        {emptyView}
       </div>
     );
   }

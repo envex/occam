@@ -78,7 +78,9 @@ function createWindow() {
   );
   mainWindow.on('closed', () => (mainWindow = null));
 
-  mainWindow.on('blur', closeWindow);
+  if (!isDev) {
+    mainWindow.on('blur', closeWindow);
+  }
 }
 
 const createTouchBar = () => {
@@ -124,6 +126,10 @@ const getWindowPosition = () => {
 
 const openWindow = () => {
   const position = getWindowPosition();
+
+  if (mainWindow.isVisible()) {
+    return closeWindow();
+  }
 
   mainWindow.setPosition(position.x, position.y, false);
   mainWindow.show();
