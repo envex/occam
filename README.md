@@ -17,3 +17,14 @@ Currently we use a custom built version of [FruityRazer](https://github.com/Frui
 - [FruityRazer](https://github.com/FruityRazer/FruityRazer)
 - Icons by [Feather](https://feathericons.com/)
 - Background by [The Designest](https://dribbble.com/shots/5710529-Fluid-art-abstract-wallpapers)
+
+## Contributing
+
+To get the project up and running, use the following steps.
+
+```
+yarn install
+yarn electron-dev
+```
+
+This will startup a local electron dev environment for you and load the app in your taskbar.
